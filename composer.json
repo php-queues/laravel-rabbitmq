@@ -31,8 +31,7 @@
         "php": ">=7.4",
         "bunny/bunny": "^0.5.1",
         "illuminate/queue": "^8.83",
-        "php-queues/rabbitmq-transport": "^0.6.3",
-        "php-queues/rabbitmq-bunny-transport": "^0.2.0"
+        "php-queues/rabbitmq-transport": "^0.6.3"
     },
     "require-dev": {
         "vimeo/psalm": "^4.22",
