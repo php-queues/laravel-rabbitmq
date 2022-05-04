@@ -25,12 +25,12 @@ final class LaravelRabbitmqServiceProvider extends ServiceProvider
         /** @var QueueManager $queue */
         $queue = $this->app->get('queue');
 
-        $queue->addConnector('larabbitmq', function (Application $app): LarabbitmqConnector {
+        $queue->addConnector('larabbitmq', function (): LarabbitmqConnector {
             /** @var Dispatcher $events */
-            $events = $app->get('events');
+            $events = $this->app->get('events');
 
             /** @var LoggerInterface $logger */
-            $logger = $app->get(LoggerInterface::class);
+            $logger = $this->app->get(LoggerInterface::class);
 
             return new LarabbitmqConnector($logger, $events);
         });
