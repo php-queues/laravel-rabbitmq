@@ -12,6 +12,14 @@ use Psr\Log\LoggerInterface;
 
 final class LaravelRabbitmqServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/larabbitmq.php',
+            'queue.connections.larabbitmq'
+        );
+    }
+
     public function boot(): void
     {
         /** @var QueueManager $queue */
