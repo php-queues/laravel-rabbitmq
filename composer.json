@@ -36,8 +36,7 @@
     },
     "require-dev": {
         "vimeo/psalm": "^4.22",
-        "phpunit/phpunit": "^9.5",
-        "symfony/var-dumper": "^5.4"
+        "phpunit/phpunit": "^9.5"
     },
     "extra": {
         "laravel": {
