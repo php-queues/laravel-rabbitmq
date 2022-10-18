@@ -8,6 +8,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\CallQueuedHandler;
 use Illuminate\Support\Str;
+use PhpQueues\LaravelRabbitmq\ContainsProperties;
 use PhpQueues\LaravelRabbitmq\DeliveryOptions;
 use PhpQueues\LaravelRabbitmq\LarabbitmqQueue;
 use PhpQueues\RabbitmqTransport\AmqpDestination;
@@ -52,6 +53,46 @@ final class LarabbitmqQueueTest extends TestCase
         $queue = $this->createQueue($operator, new AmqpProducer($packagePublisher));
 
         $queue->push(new TestJob(), '', 'test');
+    }
+
+    public function testJobWithPropertiesPushed(): void
+    {
+        $operator = $this->createMock(AmqpOperator::class);
+
+        $operator
+            ->expects($this->exactly(1))
+            ->method('bindQueue')
+            ->with(Queue::default('test')->makeDurable(), Exchange::direct('main')->makeDurable(), 'test');
+
+        $id = Uuid::uuid4();
+
+        Str::createUuidsUsing(fn (): UuidInterface => $id);
+
+        $packagePublisher = $this->createMock(PackagePublisher::class);
+
+        $packagePublisher
+            ->expects($this->exactly(1))
+            ->method('publish')
+            ->with(new AmqpMessage($id->toString(), \json_encode([
+                'uuid' => $id->toString(),
+                'displayName' => TestJobWithProperties::class,
+                'job' => CallQueuedHandler::class.'@call',
+                'maxTries' => null,
+                'maxExceptions' => null,
+                'failOnTimeout' => false,
+                'backoff' => null,
+                'timeout' => null,
+                'retryUntil' => null,
+                'data' => [
+                    'commandName' => TestJobWithProperties::class,
+                    'command' => \serialize(new TestJobWithProperties()),
+                ],
+                'attempts' => 0,
+            ]), new AmqpDestination('main', 'test'), ['content-type' => 'application/json', 'x-trace-id' => $id->toString(), 'x-attempts' => 0, 'x-key' => 'x-value'], true, true, true));
+
+        $queue = $this->createQueue($operator, new AmqpProducer($packagePublisher));
+
+        $queue->push(new TestJobWithProperties(), '', 'test');
     }
 
     public function testJobLaterWithDelayedExchangePlugin(): void
@@ -173,5 +214,30 @@ final class TestJob implements ShouldQueue
     public function handle(): void
     {
         //
+    }
+}
+
+final class TestJobWithProperties implements ShouldQueue, ContainsProperties
+{
+    public string $queue = 'test';
+    public string $connection = 'larabbitmq';
+
+    public function handle(): void
+    {
+        //
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function properties(): array
+    {
+        return [
+            'mandatory' => true,
+            'immediate' => true,
+            'headers' => [
+                'x-key' => 'x-value',
+            ],
+        ];
     }
 }

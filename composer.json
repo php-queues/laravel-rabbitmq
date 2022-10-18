@@ -28,7 +28,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "bunny/bunny": "^0.5.1",
         "illuminate/queue": "^9.0",
         "php-queues/rabbitmq-transport": "^0.6.3"
